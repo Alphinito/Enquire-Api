@@ -1,8 +1,21 @@
-{
+{  
+  "scripts": {
+    "start": "node ./src/server.js"
+  },
+  "name": "enquire-api",
+  "version": "1.0.0",
+  "main": "server.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
   "dependencies": {
+    "@prisma/client": "^5.5.2",
     "express": "^4.18.2",
     "express-graphql": "^0.12.0",
-    "graphql": "^15.8.0",
+    "graphql": "^15.8.0"
+  },
+  "devDependencies": {
     "prisma": "^5.5.2"
   }
 }

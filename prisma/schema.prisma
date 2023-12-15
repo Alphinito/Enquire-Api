@@ -1,0 +1,155 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model area {
+  ar_id                        Int    @id @default(autoincrement())
+  ar_area                      String @db.VarChar(100)
+  ar_encargado                 Int?
+  user_area_ar_encargadoTouser user?  @relation("area_ar_encargadoTouser", fields: [ar_encargado], references: [us_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_user_encargado")
+  user_user_us_areaToarea      user[] @relation("user_us_areaToarea")
+}
+
+model form {
+  fo_id       Int           @id @default(autoincrement())
+  fo_nombre   String        @db.VarChar(150)
+  fo_area     Int[]
+  fo_creador  Int
+  fo_fecha    DateTime?     @db.Date
+  user        user          @relation(fields: [fo_creador], references: [us_id], onDelete: NoAction, onUpdate: NoAction)
+  form_config form_config[]
+  form_module form_module[]
+}
+
+model form_config {
+  foc_id               Int      @id @default(autoincrement())
+  foc_form             Int
+  foc_evalua_encargado Boolean?
+  foc_evalua_jefe      Boolean?
+  form                 form     @relation(fields: [foc_form], references: [fo_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model form_module {
+  fom_id                  Int                       @id @default(autoincrement())
+  fom_form                Int?
+  fom_order               Int
+  form                    form?                     @relation(fields: [fom_form], references: [fo_id], onDelete: NoAction, onUpdate: NoAction)
+  form_question_multiple1 form_question_multiple1[]
+  form_question_multiple2 form_question_multiple2[]
+  form_question_open      form_question_open[]
+  form_question_range     form_question_range[]
+}
+
+model form_question_multiple1 {
+  foqm_id                 Int                       @id @default(autoincrement())
+  foqm_module             Int
+  foqm_question           String                    @db.VarChar(5000)
+  foqm_options            String[]                  @db.VarChar
+  foqm_img                Bytes?
+  form_module             form_module               @relation(fields: [foqm_module], references: [fom_id], onDelete: NoAction, onUpdate: NoAction)
+  form_response_multiple1 form_response_multiple1[]
+}
+
+model form_question_multiple2 {
+  foqm_id                 Int                       @id @default(autoincrement())
+  foqm_module             Int
+  foqm_question           String                    @db.VarChar(5000)
+  foqm_options            String[]                  @db.VarChar
+  foqm_img                Bytes?
+  form_module             form_module               @relation(fields: [foqm_module], references: [fom_id], onDelete: NoAction, onUpdate: NoAction)
+  form_response_multiple2 form_response_multiple2[]
+}
+
+model form_question_open {
+  foqo_id             Int                   @id @default(autoincrement())
+  foqo_module         Int
+  foqo_question       String                @db.VarChar(5000)
+  foqo_img            Bytes?
+  form_module         form_module           @relation(fields: [foqo_module], references: [fom_id], onDelete: NoAction, onUpdate: NoAction)
+  form_response_open  form_response_open[]
+  form_response_range form_response_range[]
+}
+
+model form_question_range {
+  foqr_id       Int         @id @default(autoincrement())
+  foqr_module   Int
+  foqr_question String      @db.VarChar(5000)
+  foqr_initial  Int
+  foqr_final    Int
+  foqr_img      Bytes?
+  form_module   form_module @relation(fields: [foqr_module], references: [fom_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model form_response_multiple1 {
+  form_id                 Int                     @id @default(autoincrement())
+  form_question           Int
+  form_user               Int
+  form_response           Int
+  form_time               Int
+  form_question_multiple1 form_question_multiple1 @relation(fields: [form_question], references: [foqm_id], onDelete: NoAction, onUpdate: NoAction)
+  user                    user                    @relation(fields: [form_user], references: [us_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model form_response_multiple2 {
+  form_id                 Int                     @id @default(autoincrement())
+  form_question           Int
+  form_user               Int
+  form_response           Int[]
+  form_time               Int
+  form_question_multiple2 form_question_multiple2 @relation(fields: [form_question], references: [foqm_id], onDelete: NoAction, onUpdate: NoAction)
+  user                    user                    @relation(fields: [form_user], references: [us_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model form_response_open {
+  foro_id            Int                @id @default(autoincrement())
+  foro_question      Int
+  foro_user          Int
+  foro_response      String             @db.VarChar(5000)
+  foro_time          Int
+  form_question_open form_question_open @relation(fields: [foro_question], references: [foqo_id], onDelete: NoAction, onUpdate: NoAction)
+  user               user               @relation(fields: [foro_user], references: [us_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model form_response_range {
+  forr_id            Int                @id @default(autoincrement())
+  forr_question      Int
+  forr_user          Int
+  forr_response      Int
+  forr_time          Int
+  form_question_open form_question_open @relation(fields: [forr_question], references: [foqo_id], onDelete: NoAction, onUpdate: NoAction)
+  user               user               @relation(fields: [forr_user], references: [us_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model user {
+  us_id                        Int                       @id @default(autoincrement())
+  us_nombre                    String                    @db.VarChar(120)
+  us_identificacion            String                    @db.VarChar(25)
+  us_area                      Int
+  us_jefe                      Int?
+  us_activo                    Boolean?
+  area_area_ar_encargadoTouser area[]                    @relation("area_ar_encargadoTouser")
+  form                         form[]
+  form_response_multiple1      form_response_multiple1[]
+  form_response_multiple2      form_response_multiple2[]
+  form_response_open           form_response_open[]
+  form_response_range          form_response_range[]
+  area_user_us_areaToarea      area                      @relation("user_us_areaToarea", fields: [us_area], references: [ar_id], onDelete: NoAction, onUpdate: NoAction)
+  user                         user?                     @relation("userTouser", fields: [us_jefe], references: [us_id], onDelete: NoAction, onUpdate: NoAction)
+  other_user                   user[]                    @relation("userTouser")
+  user_acces                   user_acces[]
+}
+
+model user_acces {
+  usa_id      Int      @id @default(autoincrement())
+  usa_user    Int
+  usa_evaluar Boolean?
+  usa_crud_fo Boolean?
+  usa_crud_us Boolean?
+  usa_crud_ar Boolean?
+  user        user     @relation(fields: [usa_user], references: [us_id], onDelete: NoAction, onUpdate: NoAction)
+}
